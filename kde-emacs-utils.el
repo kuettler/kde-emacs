@@ -101,7 +101,7 @@ This function does not do any hidden buffer changes."
 	(let ((pos (c-safe-scan-lists (point) -1 1)))
 	; +1 added here so that the regexp in the while matches the { too.
 	  (goto-char (if pos (+ pos 1) (point-min))))
-	(while (re-search-backward "^[ ]*\\(class\\|namespace\\|struct\\)[ \t][^};]*{" nil t)
+	(while (re-search-backward "^[ \t]*\\(class\\|namespace\\|struct\\)[ \t][^};]*{" nil t)
 	  (save-excursion
 	    (forward-word 1)
 	   (when (looking-at "[ \t]*[A-Z_]*_EXPORT[A-Z_]*[ \t]")
@@ -225,6 +225,19 @@ This function does not do any hidden buffer changes."
     )
   )
 
+(defun current-c++-function-name ()
+  (save-excursion
+    (let (begin end function)
+      (c-beginning-of-defun)
+      (setq begin (point))
+      (c-end-of-defun)
+      (setq end (point))
+      (setq function (buffer-substring begin end))
+      (if (string-match (car fume-function-name-regexp-c++) function)
+	  (message (match-string (cdr fume-function-name-regexp-c++) function))
+	(error "no function here"))
+      )))
+
 ;; Switch between the declaration of a class member in .cc/.cpp/.C, and its definition in the .h file
 ;; Written by David and Reggie after much hair tearing
 ;; Found since, might be worth looking at: http://www.hendawi.com/emacs/sourcepair.el
@@ -242,7 +255,7 @@ This function does not do any hidden buffer changes."
 	;(progn
 	;  (let ((pos (kde-scan-lists (point) -1 1 nil t))) ; Go up a level
 	;    (goto-char (if pos (+ pos 1) (point-min))))
-        (let ((a (fume-function-before-point))
+        (let ((a (current-c++-function-name))
 	      (functionregexp ""))
           
           (if (eq a nil)
