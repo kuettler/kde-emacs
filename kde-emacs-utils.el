@@ -479,6 +479,18 @@ This function does not do any hidden buffer changes."
       )
   )
 
+(defun upcase-with-underline (s)
+  (let ((pos 0)
+	(case-fold-search nil)
+	(wordlist '()))
+    (while (string-match "\\([A-Z]\\)" s (+ pos 1))
+      (setq wordlist (cons (substring s pos (match-beginning 1)) wordlist))
+      (message (car wordlist))
+      (setq pos (match-beginning 1)))
+    (setq wordlist (cons (substring s pos (length s)) wordlist))
+    (mapconcat (lambda (x) (upcase x)) (nreverse wordlist) "_")
+    ))
+
 ; finds a string to be used in the header-protection function ( see below )
 (defun kde-header-protection-definable-string ()
    (let* ((definablestring "")
@@ -491,7 +503,7 @@ This function does not do any hidden buffer changes."
        (let ((part (pop parts)))
 	 (setq definablestring
 	       (concat
-		(upcase (replace-in-string part "[\\.-]" "_"))
+		(upcase-with-underline (replace-in-string part "[\\.-]" "_"))
 		(if (not first-iter) "_" "")
 		definablestring
 		)
